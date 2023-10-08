@@ -41,11 +41,11 @@ class ChatWithPandas(AbstractFunction):
         
         query = df[0][0]
         req_df = df.drop([0], axis=1)
-        
+
         smart_df = AIDataFrame(req_df, description="A dataframe about cars")
         smart_df.initialize_middleware()
 
-        response = smart_df.chat(query)
+        response, command = smart_df.chat(query)
         
         df_dict = {"response": [response]}
         

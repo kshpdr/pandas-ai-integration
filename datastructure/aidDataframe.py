@@ -67,7 +67,7 @@ class AIDataFrame(pd.DataFrame):
         open_ai_key = self.config.get_open_ai_key()
 
         self.llm_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key=open_ai_key), \
-                                        self.pd_df, verbose=False)
+                                        self.pd_df, verbose=False, return_intermediate_steps=True)
         openai.api_key = open_ai_key
         self.openai_model = "text-davinci-003"
         return
@@ -89,7 +89,8 @@ class AIDataFrame(pd.DataFrame):
         return answer
 
     def chat(self, prompt):
-        ans = self.llm_agent.run(prompt)
-        return ans
+        ans = self.llm_agent.__call__(prompt)
+        response, command = ans['output'], ans['intermediate_steps'][0][0].tool_input
+        return response, command
 
         
