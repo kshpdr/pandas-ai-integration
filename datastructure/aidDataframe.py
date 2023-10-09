@@ -10,53 +10,39 @@ from config import Config
 
 
 class AIDataFrame(pd.DataFrame):
-    def __init__(self, df, config=None, description=None, name=None) -> None:
-        super().__init__(df)
-
-        #initialize pandas dataframe
-        self.pd_df = df
-        self.config = Config()
+    _metadata = ['config', 'description', 'name', 'is_df_loaded', 'cache', 'llm_agent', 'openai_model']
+    
+    def __init__(self, *args, config=None, description=None, name=None, **kwargs):
+        super().__init__(*args, **kwargs)
         
-        if len(df)>0:
-            self.is_df_loaded = True
-        else:
-            self.is_df_loaded = False
-
-        #set the description
+        self.is_df_loaded = len(self) > 0
         self.description = description
-        
-        #set the config
-        if config:
-            self.config = config
-        
-        #set name
+        self.config = config or Config()  # Assuming Config is some predefined default config
         self.name = name
-
-        #setup cache
         self.cache = {}
 
     @property
     def col_count(self):
         if self.is_df_loaded:
-            return len(list(self.pd_df.columns))
+            return len(list(self.columns))
         
     @property
     def row_count(self):
         if self.is_df_loaded:
-            return len(self.pd_df)
+            return len(self)
         
     @property
     def sample_head_csv(self):
         if self.is_df_loaded:
-            return self.pd_df.head(5).to_csv()
+            return self.head(5).to_csv()
         
     
     @property
     def metadata(self):
-        return self.pd_df.info()
+        return self.info()
     
     def to_csv(self, file_path):
-        self.pd_df.to_csv(file_path)
+        self.to_csv(file_path)
     
 
     def clear_cache(self):
@@ -67,7 +53,7 @@ class AIDataFrame(pd.DataFrame):
         open_ai_key = self.config.get_open_ai_key()
 
         self.llm_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key=open_ai_key), \
-                                        self.pd_df, verbose=False, return_intermediate_steps=True)
+                                        self, verbose=False, return_intermediate_steps=True)
         openai.api_key = open_ai_key
         self.openai_model = "text-davinci-003"
         return
@@ -90,6 +76,7 @@ class AIDataFrame(pd.DataFrame):
 
     def chat(self, prompt):
         ans = self.llm_agent.__call__(prompt)
+        print(ans['intermediate_steps'][0][0].log)
         response, command = ans['output'], ans['intermediate_steps'][0][0].tool_input
         return response, command
 
