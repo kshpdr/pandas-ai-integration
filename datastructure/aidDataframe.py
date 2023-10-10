@@ -7,7 +7,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.agents.agent_types import AgentType
 from prompts.error_correction_prompt import ErrorCorrectionPrompt
 from config import Config
-
+from datastructure.history_manager import global_query_history
 
 class AIDataFrame(pd.DataFrame):
     _metadata = ['config', 'description', 'name', 'is_df_loaded', 'cache', 'llm_agent', 'openai_model']
@@ -20,6 +20,17 @@ class AIDataFrame(pd.DataFrame):
         self.config = config or Config()  # Assuming Config is some predefined default config
         self.name = name
         self.cache = {}
+
+    def add_to_history(self, query, response, code):
+        global_query_history.add_query(query, response, code)
+
+    def get_last_query(self):
+        return global_query_history.get_last_query()
+    
+    def wrap_with_last_query(self, query):
+        new_query = "Previous query: " + self.get_last_query()
+        new_query += f"Current query: {query}"
+        return new_query
 
     @property
     def col_count(self):
@@ -74,10 +85,13 @@ class AIDataFrame(pd.DataFrame):
 
         return answer
 
-    def chat(self, prompt):
-        ans = self.llm_agent.__call__(prompt)
-        print(ans['intermediate_steps'][0][0].log)
+    def chat(self, prompts):
+        ans = self.llm_agent.__call__(prompts)
         response, command = ans['output'], ans['intermediate_steps'][0][0].tool_input
+        # uncomment to see log of the langchain
+        # print(f"FULL LOG: {ans}")
+        # print(ans['intermediate_steps'][0][0].log)
+
         return response, command
 
         

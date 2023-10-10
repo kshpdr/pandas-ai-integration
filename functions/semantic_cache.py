@@ -11,7 +11,6 @@ from datastructure.aidDataframe import AIDataFrame
 
 class ChatWithPandas(AbstractFunction):
 
-
     @setup(cacheable=False, function_type="FeatureExtraction", batchable=False)
     def setup(self):
         pass
@@ -38,14 +37,15 @@ class ChatWithPandas(AbstractFunction):
         ],
     )
     def forward(self, df: pd.DataFrame) -> pd.DataFrame:
-        
-        query = df[0][0]
+
+        query = smart_df.wrap_with_last_query(df[0][0])
         req_df = df.drop([0], axis=1)
 
         smart_df = AIDataFrame(req_df, description="A dataframe about cars")
         smart_df.initialize_middleware()
 
         response, command = smart_df.chat(query)
+        smart_df.add_to_history(query, response, command)
         
         df_dict = {"response": [response]}
         
