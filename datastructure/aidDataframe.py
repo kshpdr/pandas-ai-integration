@@ -66,7 +66,7 @@ class AIDataFrame(pd.DataFrame):
         self.llm_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key=open_ai_key), \
                                         self, verbose=False, return_intermediate_steps=True)
         openai.api_key = open_ai_key
-        self.openai_model = "text-davinci-003"
+        self.openai_model = "gpt-4"
         return
     
     def query_dataframe(self, query):
@@ -86,11 +86,12 @@ class AIDataFrame(pd.DataFrame):
         return answer
 
     def chat(self, prompts):
+        print(f"self is {self}")
         ans = self.llm_agent.__call__(prompts)
         response, command = ans['output'], ans['intermediate_steps'][0][0].tool_input
         # uncomment to see log of the langchain
-        # print(f"FULL LOG: {ans}")
-        # print(ans['intermediate_steps'][0][0].log)
+        print(f"FULL LOG: {ans}")
+        print(ans['intermediate_steps'][0][0].log)
 
         return response, command
 

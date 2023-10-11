@@ -38,13 +38,17 @@ class ChatWithPandas(AbstractFunction):
     )
     def forward(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        query = smart_df.wrap_with_last_query(df[0][0])
+        print(f"df is: {df}")
+        query = df[0][0]
         req_df = df.drop([0], axis=1)
+
+        print(f"req_df is: {req_df}")
 
         smart_df = AIDataFrame(req_df, description="A dataframe about cars")
         smart_df.initialize_middleware()
+        query_with_context = smart_df.wrap_with_last_query(query)
 
-        response, command = smart_df.chat(query)
+        response, command = smart_df.chat(query_with_context)
         smart_df.add_to_history(query, response, command)
         
         df_dict = {"response": [response]}
