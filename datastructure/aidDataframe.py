@@ -86,12 +86,11 @@ class AIDataFrame(pd.DataFrame):
         return answer
 
     def chat(self, prompts):
-        print(f"self is {self}")
         ans = self.llm_agent.__call__(prompts)
         response, command = ans['output'], ans['intermediate_steps'][0][0].tool_input
         # uncomment to see log of the langchain
-        print(f"FULL LOG: {ans}")
-        print(ans['intermediate_steps'][0][0].log)
+        # print(f"FULL LOG: {ans}")
+        # print(ans['intermediate_steps'][0][0].log)
 
         return response, command
 

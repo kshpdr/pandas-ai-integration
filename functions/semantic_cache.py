@@ -38,11 +38,12 @@ class ChatWithPandas(AbstractFunction):
     )
     def forward(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        print(f"df is: {df}")
+        # uncomment for printing logs
+        # print(f"df is: {df}")
         query = df[0][0]
         req_df = df.drop([0], axis=1)
 
-        print(f"req_df is: {req_df}")
+        # print(f"req_df is: {req_df}")
 
         smart_df = AIDataFrame(req_df, description="A dataframe about cars")
         smart_df.initialize_middleware()
