@@ -51,6 +51,7 @@ class ChatWithPandas(AbstractFunction):
 
         response, command = smart_df.chat(query_with_context)
         smart_df.add_to_history(query, response, command)
+        # print("response: ", response)
         
         df_dict = {"response": [response]}
         
