@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import openai
 from langchain.llms import OpenAI
-from langchain.agents import create_pandas_dataframe_agent
+# from langchain.agents import create_pandas_dataframe_agent
+from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 from langchain.chat_models import ChatOpenAI
 from langchain.agents.agent_types import AgentType
 from prompts.error_correction_prompt import ErrorCorrectionPrompt
@@ -86,6 +87,11 @@ class AIDataFrame(pd.DataFrame):
         return answer
 
     def chat(self, prompts):
+        cached_query = global_query_history.is_query_semantically_similar(prompts)
+
+        if cached_query:
+            return "Cached: " + cached_query["response"], cached_query["command"]
+        
         ans = self.llm_agent.__call__(prompts)
         response, command = ans['output'], ans['intermediate_steps'][0][0].tool_input
         # uncomment to see log of the langchain
